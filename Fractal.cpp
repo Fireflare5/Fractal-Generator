@@ -15,7 +15,7 @@ private:
     std::array<unsigned, 2> res;
     unsigned lod;
     double h = 2.5;
-    double B = 20.0;
+    double B = 10.0;
 
 public:
     Fractal(unsigned &width, unsigned &height, unsigned depth) : res{width, height}, lod(depth), gen(rd()), distrib(0.0L, (long double) 2.0 * M_PI), offset(0.995L, 1.10L)
