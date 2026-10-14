@@ -10,52 +10,45 @@ class Fractals:
     def __init__(self, n_fractals: int): # Initialization Function
         self.n_fractals = n_fractals # Number Of Fractals To Generate
         
-        self.resolution = 4 * np.array([840, 525]) # Image Resolution
+        self.resolution = np.array([3840, 2160]) # Image Resolution
         self.depth = 250 # Level Of Detail To Render Each Fractal At (Lower Values Improve Palette Gradient)
-        self.invert = False # Inverts The Color Palette
-        self.Luminance_Gradient = True # Darkens The Area Outside The Fractal
+        self.invert = True # Inverts The Color Palette
+        self.Luminance_Gradient = False # Darkens The Area Outside The Fractal
         self.Luminance_Cos = False # Changes Luminance Grad Function To Cosine 
 
         # Correction Value For Palette Function (50% Max Color Value)
         self.a = np.array([
-            1.5, 0.5, 1.5, 0.5
+            0.5, 0.5, 0.5, 0.5
             ])
         # Color Scaling Value Correction Value (50% Max Color Value)
         self.b = np.array([
-            1.5, 0.5, 1.5, 0.5
+            0.5, 0.5, 0.5, 0.5
             ])
         # Color Shift Frequency; Changes How Fast The Colors Change (Negative Values Reverse The Palette Direction)
         self.c = np.array([
-            2.0, 4.0, 2.0, 1.0
+            1.0, 1.0, 1.0, 1.0
             ])
         # Color Phase
         self.d = np.array([
-            0.00, 0.50, 0.50, -0.30
+            0.00, 0.10, 0.20, 0.00
             ])
         # Palette Phase; Changes Where The Palette Begins
-        self.s = 0.50
+        self.s = 0.00
+        
+        self.h = np.linspace(0.0, np.pi * 2.0, 1200)
         
         # Runs The Core Function For Each Fractal To Be Generated
-        for self.n in range(self.n_fractals):
+        for self.n in trange(0, self.n_fractals, ncols=100):
+            self.s = self.n / self.n_fractals
             self.core()
     
     def core(self):
         
         data, tmp = os.pipe()
-        os.write(tmp, bytes(f"{self.resolution[0]} {self.resolution[1]} {self.depth}\n", "utf-8"))
+        os.write(tmp, bytes(f"{self.resolution[0]} {self.resolution[1]} {self.depth} {self.h[self.n]}\n", "utf-8"))
         os.close(tmp)
 
-        if self.n_fractals == 1:
-            t0 = ti.time()
-
-            print("Running Calculations...")
-
         out = subprocess.check_output('cd ./ && g++ -O3 -ffast-math Fractal.cpp -o Fractal && ./Fractal', stdin=data, shell=True)
-
-        if self.n_fractals == 1:
-            t1 = ti.time()
-
-            print(f"Calculations Complete!\nTime Elapsed: {t1 - t0}s\nEstablishing Colors...")
 
         raws = np.array([_.split() for _ in [i for i in out.decode("utf-8").strip().split("\n")]], dtype=np.float32)
 
@@ -81,11 +74,6 @@ class Fractals:
         colors = np.dstack((R, G, B))
 
         if self.n_fractals == 1:
-            t2 = ti.time()
-
-            print(f"Colors Established!\nTime Elapsed: {t2 - t0}s\nStarting Final Render...")
-
-        if self.n_fractals == 1:
             for y in trange(self.resolution[1], ncols=100):
                 for x in range(self.resolution[0]):
                     pixels[x, y] = tuple(colors[x, y])
@@ -94,16 +82,7 @@ class Fractals:
                 for x in range(self.resolution[0]):
                     pixels[x, y] = tuple(colors[x, y])
 
-        if self.n_fractals == 1:
-            img.show()
-        img.save(f'./Fractals/{np.random.randint(0,2**32)}.png')
-
-        if self.n_fractals == 1:
-            t3 = ti.time()
-
-            print(f"Final Render Time: {t3 - t0}s")
-        elif self.n_fractals > 1:
-            print(f"Fractal Complete! {self.n_fractals - (self.n + 1)} remaining!")
+        img.save(f'./Fractals/{self.n}.png')
 
 if __name__ == "__main__":
-    Fractals(100)
+    Fractals(1200)

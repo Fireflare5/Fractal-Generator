@@ -1,47 +1,42 @@
 #include <complex>
 #include <iostream>
-#include <random>
 
 class Fractal
 {
 private:
     std::complex<double> C;
-
-    std::random_device rd;
-    std::mt19937 gen;
-    std::uniform_real_distribution<long double> distrib;
-    std::uniform_real_distribution<long double> offset;
+    double c;
 
     std::array<unsigned, 2> res;
     unsigned lod;
     double h = 2.5;
-    double B = 10.0;
+    double B = 50.0;
 
 public:
-    Fractal(unsigned &width, unsigned &height, unsigned depth) : res{width, height}, lod(depth), gen(rd()), distrib(0.0L, (long double) 2.0 * M_PI), offset(0.995L, 1.10L)
+    Fractal(unsigned &width, unsigned &height, unsigned depth, double c1) : res{width, height}, lod(depth), c(c1)
     {
         core();
     }
 
-    Fractal() : res{1680, 1050}, lod(250), gen(rd()), distrib(0.0L, (long double) 2.0 * M_PI), offset(0.995L, 1.10L)
+    Fractal(double c1) : res{1680, 1050}, lod(250), c(c1)
     {
         core();
     }
 
-    Fractal(unsigned depth) : res{1680, 1050}, lod(depth), gen(rd()), distrib(0.0L, (long double) 2.0 * M_PI), offset(0.995L, 1.10L)
+    Fractal(unsigned depth, double c1) : res{1680, 1050}, lod(depth), c(c1)
     {
         core();
     }
 
-    Fractal(unsigned &width, unsigned &height) : res{width, height}, lod(250), gen(rd()), distrib(0.0L, (long double) 2.0 * M_PI), offset(0.995L, 1.10L)
+    Fractal(unsigned &width, unsigned &height,  double c1) : res{width, height}, lod(250), c(c1)
     {
         core();
     }
 
     void core()
     {
-        std::complex<double> tmp(0.0, distrib(gen));
-        C = static_cast<double>(offset(gen)) * (exp(tmp) / 2.0) - (exp(2.0 * tmp) / 4.0);
+        std::complex<double> tmp(0.0, c);
+        C = 1.10 * (exp(tmp) / 2.0) - (exp(2.0 * tmp) / 4.0);
 
         double w = h * static_cast<double>(res[0]) / res[1];
         unsigned long i, j;
@@ -107,20 +102,21 @@ public:
 int main()
 {
     unsigned h, w, d;
+    double c;
 
-    std::cin >> w >> h >> d;
+    std::cin >> w >> h >> d >> c;
 
     if (w && h && d)
     {
-        Fractal julia(w, h, d);
+        Fractal julia(w, h, d, c);
     }
     else if (d)
     {
-        Fractal julia(d);
+        Fractal julia(d, c);
     }
     else
     {
-        Fractal julia;
+        Fractal julia(c);
     }
 
     return 0;
